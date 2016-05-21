@@ -73,10 +73,11 @@ abstract class Script_Abstract {
 	public function initialize( $filename, &$params, $url = '', $url_args = '' ) {
 		$filename = self::realpath( $filename );
 
-		\Modules::current();
+		//\Modules::current();
 		/**
 		 * TODO: Check Access
 		 */
+		Modules::get( $filename );
 
 		$p = strrpos( $filename, '/' );
 		if( $p !== false ) {
@@ -154,22 +155,8 @@ abstract class Script_Abstract {
 
 
 		ob_start();
-		if( Input::post( 'action' ) ) {
-			if( ( $controllerClassName = Input::post( 'processor' ) ) && class_exists( $controllerClassName ) ) {
-				/* @var $controller Controller */
-				$controller              = new $controllerClassName( $_POST );
-				$this->controller_result = $controller->process();
-				if( $controller->request()->ajax() ) {
-					Output::header_json();
-					print ( $this->controller_result );
-					exit;
-				}
-			}
-		}
 
-		if( is_readable( $filename . ".inc" ) ) {
-			$this->_run( $filename . ".inc" );
-		}
+
 		if( is_readable( $filename . ".php" ) ) {
 			$this->_run( $filename . ".php" );
 		}

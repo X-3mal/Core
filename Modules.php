@@ -14,68 +14,66 @@ class Modules {
 
 	/**
 	 * @param string $path
-	 * @param string $main_script
+	 *
 	 * @return \DB\modules
 	 */
-	static function get ( $path, $main_script = null ) {
-		if ( !isset( $main_script ) ) {
-			$main_script = self::current_main_script ();
-		}
-		$path = self::parse_path ( $path );
+	static function get( $path ) {
 
-		if ( !isset( self::$modules[ $main_script ][ $path ] ) ) {
-			$data = array( 'dir' => $path, 'main_script' => $main_script );
-			if ( !file_exists ( $main_script . '/' . $path ) ) {
+		$path = self::parse_path( $path );
+
+		if( !isset( self::$modules[ $path ] ) ) {
+			$data = array( 'dir' => $path );
+			if( !file_exists( Config::home() . $path ) ) {
 				$module = new \DB\modules( null );
 			} else {
 				$module = new \DB\modules( $data );
-				if ( !$module->id () ) {
+				if( !$module->id() ) {
 
-					$parent = self::parent ( $path, $main_script );
-					if ( $parent && $parent->id () ) {
-						$id   = $parent->id ();
+					$parent = self::parent( $path );
+					if( $parent && $parent->id() ) {
+						$id   = $parent->id();
 						$type = $module::TYPE_CHILD_LAST;
 					} else {
 						$id   = null;
 						$type = null;
 					}
-					$module = $module->insert ( $data, array(), $type, $id );
+					$module = $module->insert( $data, array(), $type, $id );
 				}
 			}
 
-			self::$modules[ $main_script ][ $path ] = $module;
+			self::$modules[ $path ] = $module;
 		}
-		return self::$modules[ $main_script ][ $path ];
+		return self::$modules[ $path ];
 	}
 
 	/**
 	 * @param $dir
-	 * @param $main_script
+	 *
 	 * @return \DB\modules
 	 */
-	private static function parent ( $dir, $main_script ) {
-		$path = preg_replace ( '/\\/[^\\/]+\\/?$/', '/', $dir );
-		if ( $path && $path != $dir ) {
-			return self::get ( $path, $main_script );
+	private static function parent( $dir ) {
+		$path = preg_replace( '/\\/[^\\/]+\\/?$/', '/', $dir );
+		if( $path && $path != $dir ) {
+			return self::get( $path );
 		} else {
 			return null;
 		}
 
 	}
 
-	static private function parse_path ( $path ) {
-		if ( empty( $path ) ) {
+	static private function parse_path( $path ) {
+		if( empty( $path ) ) {
 			return '/';
 		}
-		if ( $path[ mb_strlen ( $path ) - 1 ] != '/' ) {
+		if( $path[ mb_strlen( $path ) - 1 ] != '/' ) {
 			$path .= '/';
 		}
-		$path = preg_replace ( '#/+#', '/', $path );
+		$path = preg_replace( '#/+#', '/', $path );
 		return $path;
 	}
 
-	static function current_main_script () {
-		switch ( URL::glob ()->subdomain () ) {
+	static function current_main_script() {
+		switch( URL::glob()->subdomain() ) {
 			case 'admin':
 				return 'scripts/admin';
 			case 'api':
@@ -87,32 +85,20 @@ class Modules {
 		}
 	}
 
-	static function current () {
-		return self::get ( URL::glob ()->path (), self::current_main_script () );
+	static function current() {
+		return self::get( URL::glob()->path() );
 	}
 
-	static function parse () {
-		global $main_script;
+	static function parse() {
 		/**
 		 * @param $dir \Files\DirRecursive
 		 */
-		function recursive_parse ( $dir ) {
-			global $main_script;
-			$dir_name = str_replace ( Config::home () . 'scripts/' . $main_script, '', $dir->dir () );
-			Modules::get ( $dir_name, $main_script );
+		function recursive_parse( $dir ) {
+			$dir_name = str_replace( Config::home() . 'scripts/', '', $dir->dir() );
+			Modules::get( $dir_name );
 		}
 
-		$main_scripts = array(
-			'admin',
-			'empty',
-			'www',
-			'landing/main',
-			'landing',
-		);
-		foreach ( $main_scripts as $main_script ) {
-			$file = new \Files\DirRecursive( Config::home () . 'scripts/' . $main_script );
-			\Files\DirRecursive::recursive_parse ( $file, 'recursive_parse' );
-		}
-		\DB\modules::normalize ( true, false, true );
+
+		\DB\modules::normalize( true, false, true );
 	}
 } 

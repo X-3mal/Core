@@ -93,11 +93,17 @@ abstract class Script_Abstract {
 	}
 
 	public function error( $code = null, $message = null, $data = array() ) {
-		if( isset( $code ) ) {
-			if( isset( $message ) ) {
-				$this->errors[ $code ] = $message;
-				$this->response        = array( 'error' => true, 'data' => array_merge( $this->errors, $data ) );
+		if( isset( $message ) ) {
+			$this->errors[ $code ] = $message;
+			if( empty( $data[ 'message' ] ) && is_array( $data ) ) {
+				$data[ 'message' ] = $message;
 			}
+
+			$this->response = array( 'error' => true, 'data' => array_merge( $this->errors, $data ) );
+		}
+
+		if( isset( $code ) ) {
+
 
 			return isset( $this->errors[ $code ] ) ? $this->errors[ $code ] : null;
 		}
@@ -128,6 +134,14 @@ abstract class Script_Abstract {
 		}
 
 		return $this->response[ $key ];
+	}
+
+	public function response_success_link( $link, $data = array() ) {
+		return $this->response( array( 'success' => true, 'data' => array_merge( $data, array( 'link' => $link ) ) ) );
+	}
+
+	public function response_success_message( $message, $data = array() ) {
+		return $this->response( array( 'success' => true, 'data' => array_merge( $data, array( 'message' => $message ) ) ) );
 	}
 
 	abstract protected function _run();
@@ -238,6 +252,7 @@ abstract class Script_Abstract {
 	public function action( $code, $secure = true ) {
 
 		if( $secure && ( URL::glob()->domain() != URL::ref()->domain() ) ) {
+
 			return false;
 		}
 		try {
@@ -247,9 +262,9 @@ abstract class Script_Abstract {
 
 			return true;
 		} catch( \Exception $e ) {
-			$this->error( $e->getCode(), $e->getMessage() );
-			\DBS::main()->rollback();
 
+			$this->error( null, $e->getMessage() );
+			\DBS::main()->rollback();
 			return false;
 		}
 

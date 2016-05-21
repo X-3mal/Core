@@ -5,10 +5,11 @@ namespace DB;
 class relations {
 	private $id;
 
-
 	static protected $name;
 	static protected $item_id_name = 'item_id';
 	static protected $property_id_name = 'property_id';
+	private $rows;
+	static private $fields_obj = array();
 
 	/**
 	 * @return \DBDriver
@@ -17,139 +18,148 @@ class relations {
 		return \DBS::main ();
 	}
 
-	static protected $fields = array (
-		'item_id'     => array (
+	static protected $fields = array(
+		'item_id'     => array(
 			'type'    => 'int',
 			'null'    => false,
 			'default' => null
 		),
-		'property_id' => array (
+		'property_id' => array(
 			'type'    => 'int',
 			'null'    => false,
 			'default' => ''
 		),
 	);
 
+	final protected function table () {
+		return static::$name;
+	}
+
 	function __construct ( $item_id = null ) {
-		$this->id = $item_id;
+		$this->id   = $item_id;
+		$this->rows = $this->_select ();
 	}
 
-	static public function field ( $key, $property = null ) {
-		if ( ! isset ( $property ) ) {
-			return static::$fields[ $key ];
-		} else {
-			return static::$fields[ $key ][ $property ];
-		}
-	}
-
-	protected $property_ids;
-	protected $property_rows;
-
-	public function id () {
+	final public function id () {
 		return $this->id;
 	}
 
-	public function default_properties () {
-		return array ();
-	}
-
-	public function properties_rows () {
-		if ( ! isset( $this->property_rows ) ) {
-			$this->id () ? $this->property_rows = $this->db_driver ()->select_assoc ( "SELECT `" . static::$property_id_name . "` AS `prop_id`, `t`.* FROM `" . static::$name . "` `t` WHERE `" . static::$item_id_name . "` = #q", $this->sql_id_value () ) : $this->property_ids = array ();
+	final function rows ( $id = null, $key = null ) {
+		if ( isset( $id ) ) {
+			if ( isset( $key ) ) {
+				return isset( $this->rows[ $id ][ $key ] ) ? $this->rows[ $id ][ $key ] : null;
+			}
+			return isset( $this->rows[ $id ] ) ? $this->rows[ $id ] : null;
 		}
-		return $this->property_rows;
+		return $this->rows;
 	}
 
-	public function property_ids () {
-		if ( ! isset( $this->property_ids ) ) {
-			$this->property_ids = $this->id () ? array_keys ( $this->properties_rows () ) : $this->default_properties ();
-		}
-		return $this->property_ids;
+	final function property_ids () {
+		return array_keys ( $this->rows () );
 	}
 
-
-	/**
-	 * @param array $ids
-	 */
-	protected function after_add ( $ids ) {
-
-	}
-
-	/**
-	 * @param array $ids
-	 * @param array $properties
-	 */
-	public function add ( $ids, $properties = array () ) {
-		$this->property_ids = null;
-		$ids                = array_unique ( $ids );
-		$items              = array ();
+	final private function _add ( $ids, $options = array() ) {
+		$names  = array( static::$item_id_name, static::$property_id_name );
+		$values = array();
 		foreach ( $ids as $id ) {
-			$id = table::field_sql ( $id, self::field ( static::$property_id_name ), true );
-			if ( $id !== false ) {
-				$items[ ] = $this->sql_id_value () . ", " . $id;
+			$value = array(
+				self::fields_obj_item_id ()->sql ( $this->id () ),
+				self::fields_obj_prop_id ()->sql ( $id )
+			);
+			foreach ( $options as $key => $val ) {
+				$field    = self::fields_obj ( $key );
+				$value[ ] = $field->sql ( $val );
+				if ( array_search ( $key, $names ) !== false ) {
+					$names[ ] = $key;
+				}
+			}
+			$values[ ] = implode ( ',', $value );
+		}
+		if ( $values ) {
+			$this->db_driver ()->query ( ">INSERT IGNORE INTO `" . self::table () . "` ( `" . implode ( '`,`', $names ) . "` ) VALUES (" . implode ( '), (', $values ) . ")" );
+		}
+	}
+
+	private function _select () {
+		$select = new Filter();
+		$select->addSelect ( '`' . static::$property_id_name . '`' );
+		foreach ( static::$fields as $name => $field ) {
+			if ( $name != static::$property_id_name ) {
+				$select->addSelect ( '`' . $name . '`' );
 			}
 		}
-		if ( $items ) {
-			$items_sql = '(' . implode ( '),(', $items ) . ')';
-			$this->db_driver ()->query ( "REPLACE INTO `" . static::$name . "` ( `" . static::$item_id_name . "` , `" . static::$property_id_name . "`) VALUES  #q ", $items_sql );
-			$this->after_add ( $ids );
-		}
+		return $this->db_driver ()->select_assoc ( "SELECT #q FROM `" . self::table () . "` WHERE `" . static::$item_id_name . "` = " . self::fields_obj_item_id ()->val ( $this->id () ), $select->select ( '' ) );
 	}
 
-	/**
-	 * @param $ids array
-	 */
-	public function remove ( $ids ) {
-		$this->property_ids = null;
-		$ids                = array_unique ( $ids );
-		$items              = array ();
-		foreach ( $ids as $id ) {
-			$items[ ] = $this->sql_property_value ( $id );
-		}
-		if ( $items ) {
-			$this->db_driver ()->query ( "DELETE FROM `" . static::$name . "` WHERE `" . static::$item_id_name . "` = #q AND `" . static::$property_id_name . "` = (#q)", $this->sql_id_value (), implode ( ',', $items ) );
-		}
+	private function _clear () {
+		$this->db_driver ()->query ( "DELETE FROM `" . self::table () . "` WHERE `#q` = #q", self::fields_obj_item_id ()->name (), self::fields_obj_item_id ()->sql ( $this->id () ) );
 	}
 
-	public function clear () {
-		$this->property_ids = null;
-		$this->db_driver ()->query ( "DELETE FROM `" . static::$name . "` WHERE `" . static::$item_id_name . "` = #q", $this->sql_id_value () );
+	protected function after_add ( $ids, $options = array() ) {
+
 	}
 
-	public function set ( $ids ) {
-		$this->clear ();
-		$this->add ( $ids );
+	protected function after_set ( $ids, $options = array() ) {
+
 	}
 
-	private function sql_id_value () {
-		return table::field_sql ( $this->id (), self::field ( static::$item_id_name ) );
+	function after_clear () {
+
 	}
 
-	private function sql_property_value ( $value ) {
-		return table::field_sql ( $value, self::field ( static::$property_id_name ) );
+	function add ( $ids, $options = array() ) {
+		$this->_add ( $ids, $options );
+		$this->after_add ( $ids, $options );
 	}
 
-	/**
-	 * @param int|array $property_id
-	 * @param           $data
-	 */
-	public function update ( $property_id, $data ) {
-		if ( is_array ( $property_id ) ) {
-			foreach ( $property_id as $id ) {
-				$this->update ( $id, $data );
+	function add_rows ( $rows ) {
+		foreach ( $rows as $row ) {
+			if ( !isset( $row[ static::$property_id_name ] ) ) {
+				throw new \Exception( static::$property_id_name . ' not set' );
 			}
-			return;
+			$ids = array( $row[ static::$property_id_name ] );
+			unset( $row[ static::$property_id_name ] );
+			$this->add ( $ids, $row );
 		}
-		$insert = new Filter();
-		foreach ( $data as $key => $val ) {
-			$insert->addInsert ( '`' . $key . '` = #q', table::field_sql ( $val, self::field ( $key ) ) );
+	}
+
+	final function set ( $ids, $options = array() ) {
+		$this->_clear ();
+		$this->_add ( $ids, $options );
+		$this->after_set ( $ids, $options );
+	}
+
+	final function clear () {
+		$this->_clear ();
+		$this->after_clear ();
+	}
+
+	/**
+	 * @param $field
+	 * @return fieldType
+	 * @throws \Exception
+	 */
+	private static function fields_obj ( $field ) {
+		if ( !isset( static::$fields[ $field ] ) || !isset( static::$fields[ $field ][ 'type' ] ) ) {
+			throw new \Exception( 'No field in config: ' . $field );
 		}
-		$this->db_driver ()->query (
-			 "UPDATE `" . static::$name . "` #q WHERE `" . static::$item_id_name . "` = #q AND `" . static::$property_id_name . "` = #q",
-				 $insert->insert ( ' SET' ),
-				 $this->sql_id_value (),
-				 table::field_sql ( $property_id, self::field ( static::$property_id_name ) )
-		);
+		$data           = static::$fields[ $field ];
+		$data[ 'name' ] = $field;
+		return isset( self::$fields_obj[ $field ] ) ? self::$fields_obj[ $field ] : self::$fields_obj[ $field ] = fieldType::instance ( $data[ 'type' ], $data );
+	}
+
+	/**
+	 * @return fieldType
+	 */
+	private static function fields_obj_item_id () {
+		return self::fields_obj ( static::$item_id_name );
+	}
+
+	/**
+	 * @return fieldType
+	 */
+	private static function fields_obj_prop_id () {
+		return self::fields_obj ( static::$property_id_name );
 	}
 
 }

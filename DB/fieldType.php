@@ -14,6 +14,7 @@ abstract class fieldType {
 
 	/**
 	 * @param $options array(
+	 * name
 	 * min
 	 * max
 	 * length
@@ -21,6 +22,10 @@ abstract class fieldType {
 	 * length_max
 	 * unsigned
 	 * regexp
+	 * def
+	 * null
+	 * values
+	 * error
 	 * )
 	 */
 	function __construct ( $options = array() ) {
@@ -82,10 +87,19 @@ abstract class fieldType {
 	}
 
 	/**
+	 * @param string $default
+	 *
 	 * @return string
 	 */
-	function error () {
-		return strval ( $this->options ( __FUNCTION__, '' ) );
+	function error ($default = '') {
+		return strval ( $this->options ( __FUNCTION__, $default ) );
+	}
+
+	/**
+	 * @return string
+	 */
+	function values () {
+		return strval ( $this->options ( __FUNCTION__, array() ) );
 	}
 
 	/**
@@ -150,6 +164,7 @@ abstract class fieldType {
 	function regexp () {
 		return $this->options ( __FUNCTION__, '' );
 	}
+
 
 	/* --------------- END OPTIONS --------------- */
 

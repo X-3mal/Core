@@ -1,6 +1,9 @@
 <?php
 
 
+/**
+ * @property \DB\modules[] top_nav
+ */
 class Script extends Script_Abstract {
 
 	public $i = 0;

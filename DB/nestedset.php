@@ -119,14 +119,16 @@ class nestedset extends table {
 					return $error_temp;
 				}
 
+
 				if ( isset( $temp_item ) && $temp_item->exists () ) {
 					if ( $temp_item->_update ( $data, $errors ) )
 						$result = $temp_item;
 					else {
 						return static::instance ();
 					}
-				} else
+				} else{
 					$result = parent::insert ( $data, $errors );
+				}
 			}
 			static::unlock_tables ();
 		}

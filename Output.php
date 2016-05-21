@@ -8,10 +8,11 @@ class Output {
 	static private $description = '';
 	static private $keywords = '';
 	static private $favicon;
+
 	static public function js ( $filename, $foreign = false ) {
 		if ( !$foreign ) {
 			$time = @filemtime ( Config::home () . $filename );
-			self::$head .= '<script type="text/javascript" src="/' . Config::public_dir() . $filename . '?t=' . $time . '"></script>';
+			self::$head .= '<script type="text/javascript" src="/' . Config::public_dir () . $filename . '?t=' . $time . '"></script>';
 		} else {
 			self::$head .= '<script type="text/javascript" src="' . $filename . '"></script>';
 		}
@@ -20,7 +21,7 @@ class Output {
 
 	static public function css ( $filename ) {
 		$time = @filemtime ( Config::home () . $filename );
-		self::$head .= '<link rel="stylesheet" type="text/css" href="/' . Config::public_dir() . $filename . '?t=' . $time . '"></link>';
+		self::$head .= '<link rel="stylesheet" type="text/css" href="/' . Config::public_dir () . $filename . '?t=' . $time . '"></link>';
 	}
 
 	static public function doctype () {
@@ -28,11 +29,10 @@ class Output {
 	}
 
 
-
 	static public function favicon ( $filename = 'favicon.ico' ) {
 		if ( !isset( self::$favicon ) ) {
 			self::$favicon = $filename;
-			self::$head .= '<link rel="icon" href="/' . Config::public_dir() . $filename . '" type="image/x-icon"/><link rel="shortcut icon" href="/' . $filename . '" type="image/x-icon"/>';
+			self::$head .= '<link rel="icon" href="/' . Config::public_dir () . $filename . '" type="image/x-icon"/><link rel="shortcut icon" href="/' . $filename . '" type="image/x-icon"/>';
 		}
 	}
 
@@ -188,6 +188,10 @@ class Output {
 		header ( 'Content-Type: text/javascript' );
 	}
 
+	static function header_json () {
+		header ( 'Content-Type: application/json' );
+	}
+
 	static function header_html () {
 		header ( 'Content-Type: text/html;charset=UTF-8' );
 	}
@@ -252,8 +256,8 @@ class Output {
 		die ();
 	}
 
-	static public function back ( $prefix = '' ) {
-		self::go ( Input::referer ( Input::url () ) . $prefix );
+	static public function back ( $default = '/' ) {
+		self::go ( Input::referer ( $default ) );
 	}
 
 	static public function go ( $url ) {

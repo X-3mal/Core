@@ -1,16 +1,18 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Алексей
  * Date: 25.02.14
  * Time: 23:58
  */
-
 class Controller {
+	const EXCEPTION_ERROR_JSON = 1;
+
 	/**
-	 * @var \Controller\Request
+	 * @var \Request
 	 */
-	private $request;
+	protected $options;
 	protected $format;
 
 	/**
@@ -21,14 +23,17 @@ class Controller {
 	}
 
 	/**
-	 * @param $request Controller\Request
+	 * @param $options array
 	 */
-	function __construct ( $request ) {
-		$this->request = $request;
+	function __construct ( $options ) {
+		$this->options = $options;
 	}
 
+	/**
+	 * @return \Request
+	 */
 	function request () {
-		return $this->request;
+		return isset( $this->request ) ? $this->request : $this->request = new \Request( $this->options );
 	}
 
 	private function error ( $msg, $code = 0 ) {
@@ -52,11 +57,17 @@ class Controller {
 			return $this->format ()->encode ( $return );
 		} catch ( \Exception $e ) {
 			\DBS::main ()->rollback ();
-			return $this->error ( $e->getMessage (), $e->getCode () );
+			$message = $e->getCode () == self::EXCEPTION_ERROR_JSON ? json_decode ( $e->getMessage (), true ) : $e->getMessage ();
+			return $this->error ( $message, $e->getCode () );
 		}
 	}
 
-	function process () {
-		return $this->action ( $this->request ()->action () );
+	function process ( $action = null ) {
+		return $this->action ( $this->request ()->action ( $action ) );
+	}
+
+	static function html_form_inputs ( $controller, $action ) {
+		return '<input type="hidden" name="processor" value="' . htmlspecialchars ( $controller ) . '"/>' .
+			   '<input type="hidden" name="action" value="' . htmlspecialchars ( $action ) . '"/>';
 	}
 } 

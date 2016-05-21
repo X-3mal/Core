@@ -34,6 +34,7 @@ class Localization {
 	private function domain () {
 		if ( !isset( $this->domain ) ) {
 			$dir = new \Files\DirRecursive( $this->mo_directory (), array( 'allowed_masks' => array( $this->base_domain () . "_\\d+\\.mo" ) ) );
+
 			foreach ( $dir->files () as $filename ) {
 				$this->domain = pathinfo ( $filename, PATHINFO_FILENAME );
 				break;

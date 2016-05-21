@@ -4,6 +4,7 @@ class URL {
 
 	private static $glob;
 	private $parse_url;
+	private static $instances = array();
 	private $url;
 
 	function __construct ( $url ) {
@@ -15,14 +16,28 @@ class URL {
 		return isset( $this->parse_url[ $key ] ) ? $this->parse_url[ $key ] : $default;
 	}
 
+
+	/**
+	 * @param $url string
+	 *
+	 * @return static
+	 */
+	static function instance( $url ) {
+		return isset( self::$instances[ $url ] ) ? self::$instances[ $url ] : self::$instances[ $url ] = new static( $url );
+	}
+
 	/**
 	 * @return URL
 	 */
 	static function glob () {
-		if ( ! isset( self::$glob ) ) {
-			self::$glob = new URL( 'http://' . Input::host () . Input::url () );
-		}
-		return self::$glob;
+		return static::instance( 'http://' . Input::host() . Input::url() );
+	}
+
+	/**
+	 * @return URL
+	 */
+	static function ref() {
+		return static::instance( \Input::referer() );
 	}
 
 	public function domain () {

@@ -9,6 +9,7 @@ if ( !empty ( Config::$root ) ) {
 	chdir ( __DIR__ . '/..' );
 }
 
+
 error_reporting ( E_ALL | E_STRICT );
 
 if ( Config::$debug ) {

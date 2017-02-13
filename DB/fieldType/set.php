@@ -12,9 +12,12 @@ namespace DB\fieldType;
 use DB\fieldType;
 
 class set extends fieldType {
+
+
+
 	function check ( $val ) {
 		$val = $this->val ( $val );
-		return $this->check_length ( $val ) && $this->check_length_min ( $val ) && $this->check_length_max ( $val ) && $this->check_regexp ( $val ) && $this->check_null ( $val );
+		return $this->check_length ( $val ) && $this->check_length_min ( $val ) && $this->check_length_max ( $val ) && $this->check_regexp ( $val ) && $this->check_null( $val ) && $this->check_values( $val );
 	}
 
 	function sql ( $val ) {

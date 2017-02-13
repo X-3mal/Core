@@ -96,10 +96,10 @@ abstract class fieldType {
 	}
 
 	/**
-	 * @return string
+	 * @return array
 	 */
 	function values () {
-		return strval ( $this->options ( __FUNCTION__, array() ) );
+		return  $this->options ( __FUNCTION__, array() ) ;
 	}
 
 	/**
@@ -200,6 +200,10 @@ abstract class fieldType {
 
 	protected function check_regexp ( $val ) {
 		return !$this->regexp () || preg_match ( $this->regexp (), $val );
+	}
+
+	function check_values( $val ) {
+		return in_array( $val, $this->values() );
 	}
 
 

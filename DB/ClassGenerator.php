@@ -65,7 +65,7 @@ class ClassGenerator {
 					case 'MEDIUMINT':
 					case 'INT':
 					case 'BIGINT':
-						$type = 'int';
+						$type = 'integer';
 						break;
 					case 'DATE':
 						$type = 'date';

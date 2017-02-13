@@ -381,7 +381,7 @@ abstract class _Table {
 
 			switch ( $field_info[ 'type' ] ) {
 				case 'tinyint' :
-				case 'int' :
+				case 'integer' :
 					if ( $value != ( string )intval ( $value ) ) {
 						return false;
 					}
@@ -446,7 +446,7 @@ abstract class _Table {
 			case 'bool' :
 				return empty ( $value ) ? 0 : 1;
 			case 'tinyint' :
-			case 'int' :
+			case 'integer' :
 				return intval ( $value );
 			case 'float' :
 				return number_format ( floatval ( $value ), 12, '.', '' );
@@ -478,12 +478,11 @@ abstract class _Table {
 			case 'bool' :
 				return empty ( $value ) ? false : true;
 			case 'tinyint' :
-			case 'int' :
+			case 'integer' :
 				return intval ( $value );
 			case 'float' :
 				return number_format ( floatval ( $value ), 12, '.', '' );
-			case 'bool' :
-				return empty ( $value ) ? 0 : 1;
+
 			case 'timestamp' :
 				if ( $value === 'CURRENT_TIMESTAMP' ) {
 					$value = \DBS::main ()->timestamp ();

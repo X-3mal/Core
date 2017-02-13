@@ -20,12 +20,12 @@ class relations {
 
 	static protected $fields = array(
 		'item_id'     => array(
-			'type'    => 'int',
+			'type'    => 'integer',
 			'null'    => false,
 			'default' => null
 		),
 		'property_id' => array(
-			'type'    => 'int',
+			'type'    => 'integer',
 			'null'    => false,
 			'default' => ''
 		),

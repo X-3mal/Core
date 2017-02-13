@@ -222,19 +222,9 @@ class Output {
 		return $checked ? 'disabled="disabled"' : '';
 	}
 
-	static public function error403() {
-		while( ob_get_level() > 0 ) {
-			ob_end_clean();
-		}
 
-		HFU::set( 'error/403' );
-		header( 'HTTP/1.0 403 Forbidden' );
-		header( "Status: 403 Forbidden" );
-		$params = array();
-		$script = new Script ( '', $params );
-		print $script->_process();
-
-		die ();
+	static function header_error( $code, $msg = '' ) {
+		header( "HTTP/1.0 " . $code . " " . $msg );
 	}
 
 	static public function error404_empty() {
@@ -262,9 +252,11 @@ class Output {
 		self::go( Input::referer( $default ) );
 	}
 
-	static public function go( $url ) {
+	static public function go( $url, $exit = false ) {
 		header( 'Location: ' . $url );
-		exit;
+		if( $exit ) {
+			exit;
+		}
 	}
 
 }

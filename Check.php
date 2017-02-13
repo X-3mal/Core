@@ -10,7 +10,7 @@ class Check {
 	static public function login ( $string ) {
 		return mb_ereg_match( "^[\w\d_\-]{3,32}$", $string );
 	}
-
+ 
 	static public function password ( $string ) {
 		return mb_ereg_match( "^.{4,}$", $string );
 	}

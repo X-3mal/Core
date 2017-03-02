@@ -8,9 +8,6 @@
 
 namespace DB\fieldType;
 
-
-use DB\fieldType;
-
 class integer extends float {
 
 	function sql ( $val ) {

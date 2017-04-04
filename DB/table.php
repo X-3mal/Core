@@ -53,6 +53,9 @@ abstract class table {
 	private        $row;
 	private        $errors     = array();
 
+
+	protected $cached = array();
+
 	function __construct( $data, $fields = array() ) {
 		if( is_null( $data ) && is_array( $fields ) ) {
 			$this->row = $fields;

@@ -63,6 +63,7 @@ class Script {
 	function error( $key, $msg ) {
 		$this->_response[ 'errors' ][ $key ] = $msg;
 		$this->_errors[ $key ]               = $msg;
+		return false;
 	}
 
 	function errors() {

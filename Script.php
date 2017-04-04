@@ -20,9 +20,9 @@ class Script {
 
 	}
 
-	function action( $name ) {
+	function action( $name, $safe=true ) {
 
-		if( URL::glob()->domain() !== URL::ref()->domain() ) {
+		if( URL::glob()->domain() !== URL::ref()->domain() && $safe ) {
 			$this->error( '', _( 'Не правильный запрос' ) );
 			return false;
 		}

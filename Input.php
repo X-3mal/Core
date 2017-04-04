@@ -69,8 +69,14 @@ class Input {
 		return isset ( $_GET[ $key ] );
 	}
 
+	/**
+	 * @param        $name
+	 * @param string $key
+	 *
+	 * @return string|array
+	 */
 	static function file ( $name, $key = 'tmp_name' ) {
-		return isset ( $_FILES[ $name ][ $key ] ) ? $_FILES[ $name ][ $key ] : '';
+		return isset ( $_FILES[ $name ][ $key ] ) ? $_FILES[ $name ][ $key ] : null;
 	}
 
 	static function param ( $array, $key, $default = '' ) {
